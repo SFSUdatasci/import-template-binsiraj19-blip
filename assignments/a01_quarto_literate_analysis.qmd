@@ -24,6 +24,8 @@ The seawater chemistry dataset used here is `BGchem2008data.csv` (downloaded pre
 
 You will explore the nitrogen to phosphate ratio, which indicates the health of the ocean ecosystem. <https://beal-agulhas.earth.miami.edu/teaching/courses/lecture-five/index.html>
 
+This analysis explores seawater chemistry data collected in 2008, focusing on the relationship between nitrogen and phosphate. In marine biology, the **Redfield Ratio** describes the consistent stoichiometric ratio of carbon, nitrogen, and phosphorus ($106:16:1$) found in marine phytoplankton and throughout the deep oceans. By calculating the ratio of Total Nitrogen to Phosphorus in this dataset, we can determine if the ecosystem is Nitrogen-limited or Phosphorus-limited. That may help us to hypothesize whether the marin species who are dependent on either phosphorous or nitrogen are in threat due to this imbalance composition. That may make us think why are these imbalance is created which is maybe due to pollutant, oil disposal domestic and industrial waste .
+
 ## Setup
 
 Best practice: put all `library()` calls in one chunk near the top so collaborators can see what packages are required.
@@ -40,7 +42,8 @@ Quarto runs R in the same way as a script: objects only exist after the chunks t
 Using `here()` is a convenient way to build paths relative to your project root (e.g., your `.qmd` might live in `scripts/` while data lives in `data/`).
 
 ```{r}
-bg_chem <- read_csv(here::here("data", "BGchem2008data.csv"))
+bg_chem <- read_csv(here::here("/Users/muhammadsiraj/Documents/import-template-binsiraj19-blip/dat 806/Data/Raw", "BGchem2008data.csv"))
+
 ```
 
 (Optional) Quick peek at the data:
@@ -49,8 +52,8 @@ bg_chem <- read_csv(here::here("data", "BGchem2008data.csv"))
 # Uncomment if you want more inspection output
  names(bg_chem)
 # str(bg_chem)
-# head(bg_chem)
-# summary(bg_chem)
+ head(bg_chem)
+#summary(bg_chem)
 ```
 
 # Analysis
@@ -103,4 +106,8 @@ In this mini-analysis, we:
 -   Computed a mean nitrogen:phosphate ratio
 -   Created a basic plot relating total nitrogen to phosphate
 
-This is the core idea of **literate analysis**: combine narrative and code in one document so the workflow is easier to understand and reproduce.
+This is the core idea of **literate analysis**: combine narrative and code in one document so the workflow is easier to understand and reproduce.\
+\
+In short, this analysis shows how we can use computer generated commands to check the standard health of the ocean. By looking at the balance between nitrogen and phosphorus in the seawater samples, we can see if the microorganisms living there have the right "nutrients" to grow. In nature, these nutrients usually stay in a very specific 16-to-1 ratio, known as the Redfield Ratio.
+
+Our plot shows that as phosphorus goes up, nitrogen follows it in a straight line, which tells us the chemistry of this water is consistent and predictable. Using a tool like Quarto makes this whole process "reproducible and reliable," meaning anyone can run our same steps and get the exact same results without having to manually recalculate the numbers or fix broken file links. It’s a clutterfree, automated way to turn raw numbers into clear projection of environmental damages
