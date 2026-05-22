@@ -1,0 +1,76 @@
+---
+title: "Cleaning and Wrangling Alaska Salmon Catch Data"
+author: "Muhammad Siraj"
+date: "2026-05-18"
+format: html
+---
+
+## Introduction
+
+Data cleaning is an important step because data are not always stored in the best format for analysis. In this report, I clean and reshape Alaska commercial salmon catch data so the values are easier to summarize by region. The main goal of this analysis is to calculate the mean salmon catch for each Alaska management region and compare which regions had the highest average catches.
+
+## Data
+
+The data used in this report come from the Alaska Department of Fish & Game commercial salmon catch dataset. The file contains annual commercial salmon catch data by Alaska management region from 1886 to 1997.
+
+```{r}
+#| message: false
+#| warning: false
+
+# Load packages used for reading, cleaning, reshaping, and summarizing the data.
+library(readr)
+library(dplyr)
+library(tidyr)
+```
+
+```{r}
+# Read the salmon catch dataset directly from the online data archive.
+catch_original <- read_csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1")
+```
+
+```{r}
+# Print the column names so I can see what variables are included in the original data.
+colnames(catch_original)
+
+# Show the first few rows to check that the data loaded correctly.
+head(catch_original)
+
+# Summarize the columns to inspect the range and structure of the data.
+summary(catch_original)
+
+# List the unique management regions in the dataset.
+unique(catch_original$Region)
+```
+
+## Analysis
+
+```{r}
+mean_region <- catch_original %>%
+  # Remove columns that are not needed for this analysis.
+  select(-All, -notesRegCode) %>%
+  # Fix the data entry issue where "I" in the Chinook column should be treated as "1".
+  mutate(Chinook = if_else(Chinook == "I", "1", Chinook)) %>%
+  # Convert the Chinook column from character data to numeric data.
+  mutate(Chinook = as.numeric(Chinook)) %>%
+  # Reshape the salmon species columns into one species column and one catch column.
+  pivot_longer(-c(Region, Year),
+               names_to = "species",
+               values_to = "catch") %>%
+  # Convert the catch values from thousands of fish to individual fish.
+  mutate(catch = catch * 1000) %>%
+  # Group the data by management region so each region can be summarized separately.
+  group_by(Region) %>%
+  # Calculate the average catch for each region.
+  summarize(mean_catch = mean(catch)) %>%
+  # Sort the regions from highest average catch to lowest average catch.
+  arrange(desc(mean_catch))
+```
+
+```{r}
+# Display the regions with the highest mean catches.
+head(mean_region)
+```
+
+## Discussion
+
+The results show that SSE had the highest mean catch, followed by BRB and NSE. This suggests that average commercial salmon catch was not evenly distributed across regions, with a few regions having much larger mean catches than others.
