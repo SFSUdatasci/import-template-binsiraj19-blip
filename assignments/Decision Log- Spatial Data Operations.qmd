@@ -1,0 +1,24 @@
+---
+title: "Decision Log: Spatial Data Operations"
+Author: "Muhammad Siraj"
+Format: HTML
+---
+
+# 2 : EPSG: 3338 
+
+For this spatial data analysis I have important command
+I have used EPSG; 3338, to compare the geometry of raw data to a known geometric output. EPSG: 3338 is a better substitute for WGS 84 because WGS 84 uses a system where the map or the location in the map is converted or seen as a 3D ellipsoid. This prompt uses angular measurement to convert the map. Since longitude converges at the poles, the physical ground distance of 1 degree of longitude shrinks dramatically as we move to the poles. For example 1 degree of longitude in Ecuador is 69 miles, whereas 1 degree of longitude in Alaska is 23 miles. Therefore when we map it on a 2D surface in a Cartesian plot using WGS 84, it will create a distorted spatial reality without proper mathematical transformation. 
+
+EPSG:3338 projection solved this problem. It wraps a mathematical cone around the pole of Alaska. Then when mathematically it gets unwrapped into a 2D structure or like a flat surface area, the polygon shape eventually brings back the relative surface area that was lost or inacurate in WGS84
+
+EPSG:3338 will convert angular degrees to planar meters. This establishes a uniform Cartesian grid where one unit measures as one meter. It saves us the loss of area of the design by WGS84. 
+
+
+# st_within and st_intersects. Another portion of the command I use is `ST_Within` command; the use of this topology 
+
+Since different locations in Alaska were converted into geometric shapes, it is necessary to define these data points of the city. With proper conversion we will get the right population data. 
+st_within and st_intersects are two commands that help with the analysis of intersections of different geometric points. 
+
+st_within works as the absolute interiority. For a hypothetical geometry A (a point), st_within geometry B (a region polygon), the whole entity of A must lie within B. It makes sure A cannot be at the border or outside of B to be assigned a point of coordination. 
+
+To utilize st_within even better, the st_intersects is even a better function. st_intersects makes sure that when different regions of Alaska are converted into geometry and fall within, such as geom_A and geom_B are intersecting, the command will duplicate the data row. The st_within will avoid topological unclearness and would require strict interior join. Through this avoidance of boundary line duplication, the population data can be saved from getting inflated. 
