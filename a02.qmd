@@ -1,0 +1,178 @@
+---
+title: "Assignment 2: Assessing Tidy Data"
+author: "Muhammad Siraj"
+date: "2026-05-18"
+format: html
+editor: visual
+---
+
+## Introduction
+
+The goal of this assignment is to examine whether the selected dataset follows tidy data principles. Tidy data means that each column represents a variable, each row represents an observation, and each cell contains a single value. These principles make data easier to clean, analyze, visualize, and reuse.
+
+For this assignment, I examined the `alaska_population.csv` dataset. The dataset contains population information for cities in Alaska, including the year, city name, latitude, longitude, and population.
+
+## Data
+
+First, I loaded the required R packages and imported the dataset.
+
+```{r}
+# Load packages
+library(tidyverse)
+```
+
+```{r}
+# Import the data
+alaska_population <- read_csv("D")
+```
+
+```{r}
+# View the first few rows
+head(alaska_population)
+```
+
+```{r}
+# Check the structure of the dataset
+glimpse(alaska_population)
+```
+
+```{r}
+# Check dimensions of the dataset
+dim(alaska_population)
+```
+
+```{r}
+# Check for missing values
+colSums(is.na(alaska_population))
+```
+
+```{r}
+# Check for duplicate rows
+sum(duplicated(alaska_population))
+```
+
+The dataset contains the following variables:
+
+-   `year`: the year of the population record
+-   `city`: the Alaska city name
+-   `lat`: latitude of the city
+-   `lng`: longitude of the city
+-   `population`: population count for that city and year
+
+Each row represents one population record for one city in one year.
+
+## Analysis
+
+### Is the data tidy?
+
+This dataset follows tidy data principles because each column represents a single variable, each row represents one observation, and each cell contains one value. The variables are `year`, `city`, `lat`, `lng`, and `population`. Each observation is a city-level population record for a specific year.
+
+The dataset does not appear to have multiple variables stored in one column or multiple observations stored in one row. It also does not include summary rows such as totals or averages mixed with the raw observations.
+
+```{r}
+# Count unique years and cities
+alaska_population |> 
+  summarise(
+    number_of_years = n_distinct(year),
+    number_of_cities = n_distinct(city),
+    number_of_rows = n()
+  )
+```
+
+```{r}
+# Check whether each city-year combination is unique
+alaska_population |> 
+  count(year, city) |> 
+  filter(n > 1)
+```
+
+If the result above returns zero rows, then each city-year combination appears only once in the dataset.
+
+### Observations, variables, and entities
+
+The main variables in this dataset are `year`, `city`, `lat`, `lng`, and `population`. The observation is a population record for a city in a given year. The main entity being observed is the city population record.
+
+However, the dataset also contains information about two related entities:
+
+1.  City information: `city`, `lat`, and `lng`
+2.  Population information: `year`, `city`, and `population`
+
+Because city coordinates describe the city itself, while population describes the city during a specific year, the dataset combines location data and population data in one table.
+
+### Primary and foreign keys
+
+A primary key is a variable, or combination of variables, that uniquely identifies each row. In this dataset, `city` may work as a primary key if the dataset only contains one year of population records. However, if the dataset is expanded to include multiple years, `city` alone would no longer uniquely identify each row because the same city could appear in multiple years.
+
+A better long-term primary key for the population table would be a compound key made from `year` and `city`.
+
+```{r}
+# Check whether city alone is unique
+alaska_population |> 
+  count(city) |> 
+  filter(n > 1)
+```
+
+```{r}
+# Check whether year and city together are unique
+alaska_population |> 
+  count(year, city) |> 
+  filter(n > 1)
+```
+
+If the first result returns zero rows, then `city` is unique in the current dataset. If the second result returns zero rows, then the compound key `year` and `city` uniquely identifies each population record.
+
+### Is the data normalized?
+
+The dataset is tidy, but it is not fully normalized if it is intended to support multiple years of population records. This is because latitude and longitude are city-level characteristics. If population data from multiple years are added, the same latitude and longitude values would be repeated for the same city each year.
+
+To normalize the data, it can be separated into two tables: a cities table and a population table.
+
+```{r}
+# Create a normalized cities table
+cities <- alaska_population |> 
+  distinct(city, lat, lng)
+
+head(cities)
+```
+
+```{r}
+# Create a normalized population table
+population_records <- alaska_population |> 
+  select(year, city, population)
+
+head(population_records)
+```
+
+In the normalized structure, the `cities` table stores one row for each city and its coordinates. The `population_records` table stores the population for each city and year.
+
+The key structure would be:
+
+-   `cities` table:
+    -   Primary key: `city`
+-   `population_records` table:
+    -   Primary key: `year` + `city`
+    -   Foreign key: `city`, which links back to the `cities` table
+
+This creates a one-to-many relationship: one city can have many population records across different years.
+
+### Example join
+
+After normalization, the two tables can be joined again when both location and population information are needed for analysis.
+
+```{r}
+# Join normalized tables back together
+joined_data <- population_records |> 
+  left_join(cities, by = "city")
+
+head(joined_data)
+```
+
+The `left_join()` keeps all rows from the population table and adds the matching latitude and longitude values from the cities table.
+
+## Conclusion
+
+The `alaska_population.csv` dataset follows tidy data principles because every column is a variable, every row is an observation, and every cell contains a single value. The dataset is appropriate for analysis in R because the structure is clear and consistent.
+
+However, the dataset can be improved through normalization. Since latitude and longitude describe the city rather than the yearly population record, the data can be separated into a `cities` table and a `population_records` table. The `city` variable can serve as the primary key in the cities table and as a foreign key in the population table. The population table can use a compound key of `year` and `city` to uniquely identify each record, especially if additional years are added later.
+
+Overall, the dataset is tidy, but normalizing it would make it more efficient, reduce redundancy, and better support future data management and analysis.
